@@ -2,16 +2,20 @@ package com.fincard.authorization;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fincard.authorization.api.AuthorizationErrorHandler;
+import com.fincard.authorization.api.AuthorizeTransactionRequest;
 import com.fincard.authorization.api.AuthorizeTransactionResponse;
 import com.fincard.authorization.api.TransactionController;
-import com.fincard.authorization.service.AuthorizationService;
+import com.fincard.authorization.service.TransactionIdempotencyService;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -22,11 +26,22 @@ import org.springframework.web.server.ResponseStatusException;
 class AuthorizationHttpTests {
 
     private static final UUID REQUEST_ID = UUID.fromString("b2debb7a-3db8-4b64-a799-0b7a939a95df");
-    private final AuthorizationService service = mock(AuthorizationService.class);
+    private final TransactionIdempotencyService service = mock(TransactionIdempotencyService.class);
+    private final TransactionController controller = new TransactionController(service);
     private final org.springframework.test.web.servlet.MockMvc mvc =
-            MockMvcBuilders.standaloneSetup(new TransactionController(service))
+            MockMvcBuilders.standaloneSetup(controller)
                     .setControllerAdvice(new AuthorizationErrorHandler())
                     .build();
+
+    @Test
+    void delegatesToIdempotencyServiceAndReturnsItsResponse() {
+        var request = new AuthorizeTransactionRequest(REQUEST_ID, 1L, new BigDecimal("100"));
+        var response = new AuthorizeTransactionResponse(REQUEST_ID, 42L, "APPROVED", null);
+        when(service.authorize(request)).thenReturn(response);
+
+        assertSame(response, controller.authorize(request));
+        verify(service).authorize(request);
+    }
 
     @Test
     void returnsBadRequestBeforeCallingService() throws Exception {

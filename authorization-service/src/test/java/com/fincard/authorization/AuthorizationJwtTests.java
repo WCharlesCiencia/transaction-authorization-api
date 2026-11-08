@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fincard.authorization.api.AuthorizeTransactionResponse;
 import com.fincard.authorization.api.TransactionController;
 import com.fincard.authorization.config.SecurityConfig;
-import com.fincard.authorization.service.AuthorizationService;
+import com.fincard.authorization.service.TransactionIdempotencyService;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.RSASSASigner;
@@ -43,7 +43,7 @@ class AuthorizationJwtTests {
 
     @Autowired MockMvc mvc;
     @Autowired RSAKey trustedKey;
-    @MockitoBean AuthorizationService service;
+    @MockitoBean TransactionIdempotencyService service;
 
     @Test
     void requiresBearerToken() throws Exception {
