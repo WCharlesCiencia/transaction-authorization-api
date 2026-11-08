@@ -1,0 +1,35 @@
+# Maven build artifacts
+target/
+*.class
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Eclipse and Spring Tool Suite
+.classpath
+.project
+.settings/
+
+# Visual Studio Code
+.vscode/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Application logs
+*.log
+logs/
+
+# Private keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+
+# Operating system files
+.DS_Store
+Thumbs.db
