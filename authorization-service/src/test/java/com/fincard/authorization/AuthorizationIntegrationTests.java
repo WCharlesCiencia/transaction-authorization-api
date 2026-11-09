@@ -38,6 +38,10 @@ class AuthorizationIntegrationTests {
     @AfterEach
     void cleanUpFixtures() {
         for (Long card : cards) {
+            jdbc.update("""
+                    DELETE FROM transaction_outbox
+                    WHERE transaction_id IN (SELECT id FROM transactions WHERE card_id = ?)
+                    """, card);
             jdbc.update("DELETE FROM transactions WHERE card_id = ?", card);
             jdbc.update("DELETE FROM cards WHERE id = ?", card);
         }
@@ -203,8 +207,8 @@ class AuthorizationIntegrationTests {
 
     private long createCard(String status, int daysToExpiration, String balance) {
         long card = jdbc.queryForObject("""
-                INSERT INTO cards (card_number, expiration_date, status, available_balance)
-                VALUES (?, CURRENT_DATE + CAST(? AS integer), ?, ?)
+                INSERT INTO cards (card_number, expiration_date, status, card_type, available_balance)
+                VALUES (?, CURRENT_DATE + CAST(? AS integer), ?, 'DEBIT', ?)
                 RETURNING id
                 """, Long.class, UUID.randomUUID().toString().substring(0, 20),
                 daysToExpiration, status, new BigDecimal(balance));

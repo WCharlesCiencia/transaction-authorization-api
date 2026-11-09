@@ -26,16 +26,21 @@ public class Card {
     @Column(nullable = false, length = 20)
     private String status;
 
+    @Column(name = "card_type", nullable = false, length = 30)
+    private String cardType;
+
     @Column(name = "available_balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal availableBalance;
 
     protected Card() {
     }
 
-    public Card(String cardNumber, LocalDate expirationDate, String status, BigDecimal availableBalance) {
+    public Card(String cardNumber, LocalDate expirationDate, String status, String cardType,
+                BigDecimal availableBalance) {
         this.cardNumber = cardNumber;
         this.expirationDate = expirationDate;
         this.status = status;
+        this.cardType = cardType;
         this.availableBalance = availableBalance;
     }
 
@@ -53,6 +58,10 @@ public class Card {
 
     public String getStatus() {
         return status;
+    }
+
+    public String getCardType() {
+        return cardType;
     }
 
     public BigDecimal getAvailableBalance() {
