@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: fincard_db
       POSTGRES_USER: fincard
-      POSTGRES_PASSWORD: fincard123
+      POSTGRES_PASSWORD: &fincard-db-password fincard123
     ports:
       - "5432:5432"
     volumes:
@@ -63,6 +63,43 @@ services:
       KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
       - kafka_data:/var/lib/kafka/data
+
+  authorization-service:
+    build:
+      context: ./authorization-service
+      dockerfile: Dockerfile
+    image: fincard-authorization:1.0
+    restart: on-failure
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - keycloak
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fincard_db
+      SPRING_DATASOURCE_USERNAME: fincard
+      SPRING_DATASOURCE_PASSWORD: *fincard-db-password
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8081/realms/fincard
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fincard/protocol/openid-connect/certs
+
+  audit-service:
+    build:
+      context: ./audit-service
+      dockerfile: Dockerfile
+    image: fincard-audit:1.0
+    restart: on-failure
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      AUDIT_DB_URL: jdbc:postgresql://postgres:5432/fincard_db
+      AUDIT_DB_USER: fincard
+      AUDIT_DB_PASSWORD: *fincard-db-password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
 
 volumes:
   postgres_data:
