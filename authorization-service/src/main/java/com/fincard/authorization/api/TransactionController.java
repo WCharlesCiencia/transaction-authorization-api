@@ -1,6 +1,5 @@
 package com.fincard.authorization.api;
 
-import com.fincard.authorization.service.AuthorizationService;
 import com.fincard.authorization.service.TransactionIdempotencyService;
 
 import jakarta.validation.Valid;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/transactions")
-public class TransactionController {
+public class TransactionController implements TransactionApiDocumentation {
 
 	private final TransactionIdempotencyService idempotencyService;
 
@@ -21,6 +20,7 @@ public class TransactionController {
 	}
 
 	@PostMapping("/authorize")
+	@Override
 	public AuthorizeTransactionResponse authorize(@Valid @RequestBody AuthorizeTransactionRequest request) {
 
 		return idempotencyService.authorize(request);
