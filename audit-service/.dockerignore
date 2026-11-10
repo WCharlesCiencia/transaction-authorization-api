@@ -1,0 +1,14 @@
+target/
+.git/
+.idea/
+.vscode/
+.settings/
+*.log
+.env
+.env.*
+**/application-local.properties
+**/application-db.local.properties
+**/*.key
+**/*.pem
+**/*.p12
+**/*.jks
